@@ -26,18 +26,3 @@ This tool is for **non-malicious executables** (e.g., installers, utilities, bus
 git clone https://github.com/yourusername/av-false-positive-tester.git
 cd av-false-positive-tester
 pip install -r requirements.txt
-
-## Configuration
-cp config.example.json config.json
-
-## Usage
-python scan.py --file my-clean-app.exe --output report_2025.json
-
-## Output Example
-✅ File: my-clean-app.exe
-📊 Size: 2.1 MB
-🔑 SHA256: a1b2c3d4e5f6...
-🔍 VirusTotal: 3 / 70 engines flagged (False Positive?)
-   - Flagged by: ALYac, Zillya, MaxSecure
-   - Clean by: Microsoft, Kaspersky, Bitdefender, ESET
-📄 Report saved: report_2025.json
