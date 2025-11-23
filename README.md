@@ -19,12 +19,6 @@ This tool is for **non-malicious executables** (e.g., installers, utilities, bus
 - `requests`
 - VirusTotal API key (free at https://virustotal.com)
 - (Optional) MetaDefender API key (https://metadefender.opswat.com)
-
-## Setup
-```bash
-git clone https://github.com/yourname/av-false-positive-tester.git
-cd av-false-positive-tester
-pip install -r requirements.txt
 **Configuration**
 1.Copy the example config:
 cp config.example.json config.json
@@ -65,3 +59,9 @@ This tool does not modify, encrypt, obfuscate, or protect your binary in any way
 Misuse (e.g., scanning malware or violating API terms) is strictly prohibited and may result in account bans or legal action.
 
 This project is aligned with ethical software development and is not intended for evasion, bypassing, or offensive security purposes.
+
+## Setup
+```bash
+git clone https://github.com/yourname/av-false-positive-tester.git
+cd av-false-positive-tester
+pip install -r requirements.txt
