@@ -23,6 +23,6 @@ This tool is for **non-malicious executables** (e.g., installers, utilities, bus
 ## Setup
 
 ```bash
-git clone https://github.com/yourusername/av-false-positive-tester.git
+git clone https://github.com/gerdonamendez-Crypter/av-false-positive-tester.git
 cd av-false-positive-tester
 pip install -r requirements.txt
