@@ -43,6 +43,22 @@ Example output:
      • ClamAV: Win.Trojan.FakeInstaller-123
 🛡️ YARA Matches:
    • UPX_Packer
+## Ethical & Legal Notice / 合规声明
+This tool is intended only for software developers to validate the reputation of their own legitimate software.
+Do not use it to:
+
+Test malware or exploit payloads
+Evaluate the effectiveness of FUD crypters or obfuscators
+Bypass security controls for malicious purposes
+Misuse of VirusTotal or this tool may result in API key revocation or legal action.
+
+- 本工具仅限软件开发者验证自身合法程序的信誉状态。
+严禁用于：
+
+测试恶意软件或攻击载荷
+评估“免杀加密器”或混淆工具的有效性
+为恶意目的绕过安全检测
+滥用 VirusTotal 或本工具可能导致 API 密钥被封禁或承担法律责任.
 
 ## Setup / 安装步骤
 
