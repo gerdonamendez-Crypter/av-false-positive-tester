@@ -9,7 +9,7 @@ A command-line tool to help **legitimate software vendors** detect when their cl
 This tool is for **non-malicious executables** (e.g., installers, utilities, business software). Do **not** submit malware, packed binaries, or obfuscated code.  
 本工具仅适用于**非恶意可执行文件**（例如安装程序、工具软件、商业应用）。**禁止**提交恶意软件、加壳文件或混淆代码。
 
-🔗 Learn more: [Data Encoder – Ethical AV False Positive Protection](https://data-encoder.com)  
+
 🔗 了解更多：[Data Encoder – 合规的 AV 误报防护方案](https://data-encoder.com)
 
 ## Features / 功能特点
@@ -52,6 +52,7 @@ Evaluate the effectiveness of FUD crypters or obfuscators
 Bypass security controls for malicious purposes
 Misuse of VirusTotal or this tool may result in API key revocation or legal action.
 
+🔗 Learn more: [Data Encoder – Ethical AV False Positive Protection](https://data-encoder.com)  
 - 本工具仅限软件开发者验证自身合法程序的信誉状态。
 严禁用于：
 
