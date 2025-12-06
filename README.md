@@ -36,27 +36,3 @@ This tool is for **non-malicious executables** (e.g., installers, utilities, bus
 git clone https://github.com/yourusername/av-false-positive-tester.git
 cd av-false-positive-tester
 pip install -r requirements.txt
-
-Then edit config.json and insert your VirusTotal API key:
-
-{
-  "virustotal_api_key": "your_real_api_key_here"
-}
-💡 Note: If you don’t have yara-python installed, YARA scanning will be skipped automatically.
-
-Usage / 使用方法
-Scan a file:
-python cli.py scan --file your-clean-app.exe --output report.json
-View the report:
-python cli.py view --input report.json
-Example output:
-
-✅ File: installer.exe
-📊 Size: 3.2 MB
-🔑 SHA256: a1b2c3...f9
-🔍 VirusTotal: 2 / 70 engines flagged
-   - Flagged by:
-     • WindowsDefender: Trojan:Win32/Fuery.B!cl
-     • ClamAV: Win.Trojan.FakeInstaller-123
-🛡️ YARA Matches:
-   • UPX_Packer
