@@ -52,7 +52,7 @@ Evaluate the effectiveness of FUD crypters or obfuscators
 Bypass security controls for malicious purposes
 Misuse of VirusTotal or this tool may result in API key revocation or legal action.
 
-🔗 Learn more: [Data Encoder – Ethical AV False Positive Protection](https://data-encoder.com)  
+🔗 Learn more: [Data Encoder – Ethical AV False Positive Protection]([https://data-encoder.com](https://data-encoder.com/blog/))  
 - 本工具仅限软件开发者验证自身合法程序的信誉状态。
 严禁用于：
 
