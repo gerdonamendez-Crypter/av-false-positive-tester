@@ -29,10 +29,26 @@ This tool is for **non-malicious executables** (e.g., installers, utilities, bus
 - `requests` library
 - 免费的 [VirusTotal API 密钥](https://virustotal.com)
 - （可选）[MetaDefender API 密钥](https://metadefender.opswat.com)
+## Usage / 使用方法
+Scan a file:
+ 
+python cli.py scan --file your-clean-app.exe --output report.json
+Example output:
+✅ File: installer.exe
+📊 Size: 3.2 MB
+🔑 SHA256: a1b2c3...f9
+🔍 VirusTotal: 2 / 70 engines flagged
+   - Flagged by:
+     • WindowsDefender: Trojan:Win32/Fuery.B!cl
+     • ClamAV: Win.Trojan.FakeInstaller-123
+🛡️ YARA Matches:
+   • UPX_Packer
 
 ## Setup / 安装步骤
 
 ```bash
-git clone https://github.com/yourusername/av-false-positive-tester.git
+git clone https://github.com/gerdonamendez-Crypter/av-false-positive-tester.git
 cd av-false-positive-tester
 pip install -r requirements.txt
+
+
