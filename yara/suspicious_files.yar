@@ -1,27 +1,52 @@
 // yara/suspicious_files.yar
-rule UPX_Packer {
+
+import "pe"
+
+rule UPX_Packer
+{
     meta:
-        description = "Detects UPX-packed executables"
+        description = "Detects UPX-packed executables by signature and PE characteristics"
         author = "vt-analyzer"
+        date = "2025-12-14"
+
     strings:
-        $upx1 = "UPX!" fullword
-        $upx2 = "UPX compressed" fullword ascii
+        $upx_signature1 = "UPX!" fullword ascii
+        $upx_signature2 = "UPX compressed" fullword ascii
+
     condition:
-        uint16(0) == 0x5A4D and (any of them)
+        uint16(0) == 0x5A4D and  // MZ header
+        pe.number_of_sections < 4 and  // UPX often reduces section count
+        any of ($upx_signature*)
 }
 
-rule Suspicious_AutoRun {
+rule Suspicious_AutoRun
+{
+    meta:
+        description = "Detects potential autorun.inf or scripts referencing AutoRun/Autorun (case-insensitive)"
+        author = "vt-analyzer"
+        date = "2025-12-14"
+
     strings:
-        $ = "AutoRun" nocase wide ascii
-        $ = "Autorun" nocase wide ascii
+        $autorun1 = "AutoRun" nocase wide ascii
+        $autorun2 = "Autorun" nocase wide ascii
+
     condition:
-        filesize < 10MB and all of them
+        filesize < 10 * 1024 * 1024 and  // 10 MB limit (YARA uses bytes)
+        any of ($autorun*)
 }
 
-rule Known_Malware_Sample {
+rule Known_Malware_Sample
+{
+    meta:
+        description = "Detects test or proof-of-concept malware strings often used in samples"
+        author = "vt-analyzer"
+        date = "2025-12-14"
+        severity = "low"  // often used in labs, not real-world
+
     strings:
-        $ = "malicious_payload" ascii
-        $ = { 6D 61 6C 77 61 72 65 } // "malware" in hex
+        $str1 = "malicious_payload" ascii
+        $hex1 = { 6D 61 6C 77 61 72 65 }  // "malware"
+
     condition:
         any of them
 }
