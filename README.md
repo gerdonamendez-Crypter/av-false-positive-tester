@@ -23,7 +23,7 @@ This tool is for **non-malicious executables** (e.g., installers, utilities, bus
   以可读格式展示被标记的杀毒引擎列表
 - Helps document false positives for vendor dispute submissions  
   协助整理误报证据，用于向杀毒厂商申诉
-
+ 
 ## Requirements / 环境要求
 - Python 3.8+
 - `requests` library
