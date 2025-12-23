@@ -3,7 +3,7 @@ import time
 import requests
 
 VT_API_BASE = "https://www.virustotal.com/api/v3"
-
+ 
 def get_virustotal_report(file_hash, api_key):
     url = f"{VT_API_BASE}/files/{file_hash}"
     headers = {"x-apikey": api_key}
