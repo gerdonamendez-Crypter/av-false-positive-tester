@@ -8,7 +8,7 @@ def view_report(report_path):
     except Exception as e:
         print(f"[!] Failed to read report: {e}")
         return
-
+ 
     print(f"✅ File: {data['file']}")
     print(f"📊 Size: {data['size_bytes'] / (1024*1024):.1f} MB")
     print(f"🔑 SHA256: {data['sha256']}")
