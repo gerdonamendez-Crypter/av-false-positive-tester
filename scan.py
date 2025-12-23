@@ -12,7 +12,7 @@ def sha256_file(filepath):
         for chunk in iter(lambda: f.read(4096), b""):
             h.update(chunk)
     return h.hexdigest()
-
+ 
 def scan_virustotal(file_path, api_key):
     print(f"[VT] Checking if file already exists...")
     file_hash = sha256_file(file_path)
