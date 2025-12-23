@@ -19,4 +19,4 @@ def scan_with_yara(filepath):
     except Exception as e:
         # Rule syntax error or file issue
         print(f"[!] YARA error: {e}")
-        return None
+        return None 
