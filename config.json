@@ -2,7 +2,7 @@
   "virustotal_api_key": "your_vt_api_key_here",
   "metadefender_api_key": null
 }
-
+ 
 💡 Note: Users should replace "your_virustotal_api_key_here" with their real VirusTotal API key (get it free at https://virustotal.com ). 
 
 
