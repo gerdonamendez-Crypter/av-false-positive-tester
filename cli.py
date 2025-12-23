@@ -10,7 +10,7 @@ def scan_command(args):
     if not os.path.isfile(args.file):
         print(f"[!] File not found: {args.file}")
         sys.exit(1)
-
+ 
     if not os.path.exists('config.json'):
         print("[!] Missing config.json. Create it from config.example.json")
         sys.exit(1)
