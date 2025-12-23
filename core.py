@@ -2,7 +2,7 @@
 import os
 import hashlib
 from typing import Dict
-
+ 
 def sha256_file(filepath: str) -> str:
     """Compute the SHA-256 hash of a file in chunks to minimize memory usage."""
     h = hashlib.sha256()
