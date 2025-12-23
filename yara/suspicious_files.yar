@@ -18,7 +18,7 @@ rule UPX_Packer
         pe.number_of_sections < 4 and  // UPX often reduces section count
         any of ($upx_signature*)
 }
-
+ 
 rule Suspicious_AutoRun
 {
     meta:
