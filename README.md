@@ -3,7 +3,7 @@
 
 A command-line tool to help **legitimate software vendors** detect when their clean binaries are **falsely flagged** by antivirus engines via public APIs (VirusTotal, MetaDefender).  
 一款命令行工具，帮助**合法软件开发者**通过公共 API（如 VirusTotal、MetaDefender）检测其干净的二进制文件是否被杀毒引擎**错误标记为恶意软件**。
-
+ 
 ⚠️ **Ethical Use Only**  
 ⚠️ **仅限合法用途**  
 This tool is for **non-malicious executables** (e.g., installers, utilities, business software). Do **not** submit malware, packed binaries, or obfuscated code.  
