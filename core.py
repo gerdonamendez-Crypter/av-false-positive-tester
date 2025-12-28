@@ -30,3 +30,4 @@ def get_file_info(filepath: str) -> Dict[str, str | int]:
         "size_bytes": size,
         "sha256": sha256
     }
+ 
