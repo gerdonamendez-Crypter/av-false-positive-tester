@@ -5,7 +5,7 @@ import json
 import hashlib
 import argparse
 import requests
-
+ 
 def sha256_file(filepath):
     h = hashlib.sha256()
     with open(filepath, 'rb') as f:
