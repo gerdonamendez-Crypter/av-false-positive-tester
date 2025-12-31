@@ -41,6 +41,16 @@ Misuse may result in API key revocation or legal consequences.
 - Rich console output with progress bars  
   丰富的控制台输出，带进度条显示
 
+  ## Sample HTML Report / HTML 报告示例
+  The generated HTML reports feature:
+
+- File overview with colored risk score badge
+- VirusTotal detection statistics and expandable list of flagged engines
+- YARA rule matches
+- CAPA detected capabilities
+- Hybrid Analysis verdict (if enabled)
+- Clean, responsive design (works on desktop and mobile)
+
 ## Requirements / 环境要求
 
 - Python 3.8+
