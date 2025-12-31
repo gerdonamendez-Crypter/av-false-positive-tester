@@ -2,21 +2,16 @@
 import os
 import hashlib
 from typing import Dict
- 
+import pefile
+
 def sha256_file(filepath: str) -> str:
-    """Compute the SHA-256 hash of a file in chunks to minimize memory usage."""
     h = hashlib.sha256()
-    try:
-        with open(filepath, 'rb') as f:
-            # Read file in 4 KiB chunks
-            while chunk := f.read(4096):
-                h.update(chunk)
-    except OSError as e:
-        raise OSError(f"Unable to read file '{filepath}': {e}") from e
+    with open(filepath, 'rb') as f:
+        while chunk := f.read(8192):
+            h.update(chunk)
     return h.hexdigest()
 
-def get_file_info(filepath: str) -> Dict[str, str | int]:
-    """Return metadata about a file, including name, absolute path, size, and SHA-256 hash."""
+def get_file_info(filepath: str) -> Dict:
     if not os.path.isfile(filepath):
         raise FileNotFoundError(f"File not found: {filepath}")
     
@@ -24,10 +19,22 @@ def get_file_info(filepath: str) -> Dict[str, str | int]:
     size = os.path.getsize(filepath)
     sha256 = sha256_file(filepath)
 
+    pe_info = {}
+    try:
+        pe = pefile.PE(filepath)
+        pe_info = {
+            "is_pe": True,
+            "sections": [s.Name.decode().strip('\x00') for s in pe.sections],
+            "imports": list(pe.DIRECTORY_ENTRY_IMPORT) if hasattr(pe, 'DIRECTORY_ENTRY_IMPORT') else [],
+            "entropy": sum(s.get_entropy() for s in pe.sections) / len(pe.sections) if pe.sections else 0
+        }
+    except:
+        pe_info = {"is_pe": False}
+
     return {
         "file": os.path.basename(filepath),
         "path": abs_path,
         "size_bytes": size,
-        "sha256": sha256
+        "sha256": sha256,
+        "pe": pe_info
     }
- 
