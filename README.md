@@ -1,62 +1,71 @@
-# AV False Positive Tester
+# AV False Positive Tester  
 # AV 误报检测工具
+ 
+A command-line tool to help **legitimate software vendors** detect when their clean binaries are **falsely flagged** by antivirus engines via public APIs (VirusTotal, MetaDefender).  
+一款命令行工具，帮助**合法软件开发者**通过公共 API（如 VirusTotal、MetaDefender）检测其干净的二进制文件是否被杀毒引擎**错误标记为恶意软件**。
+ 
+⚠️ **Ethical Use Only**  
+⚠️ **仅限合法用途**  
+This tool is for **non-malicious executables** (e.g., installers, utilities, business software). Do **not** submit malware, packed binaries, or obfuscated code.  
+本工具仅适用于**非恶意可执行文件**（例如安装程序、工具软件、商业应用）。**禁止**提交恶意软件、加壳文件或混淆代码。
 
-A powerful command-line tool designed to help **legitimate software developers and vendors** quickly detect when their **clean Windows executables** are falsely flagged by antivirus engines using public scanning services.
 
-一款功能强大的命令行工具，专为**合法软件开发者与厂商**设计，帮助快速检测自家**干净的 Windows 可执行文件**是否被杀毒引擎误报为恶意软件。
-
-Now with **advanced static analysis**, **behavioral capability detection (CAPA)**, **YARA rule matching**, **improved false-positive risk scoring**, and **beautiful HTML reports**.
-
-现已支持**高级静态分析**、**行为能力检测（CAPA）**、**YARA 规则匹配**、**更精准的误报风险评分**以及**美观的 HTML 报告**。
-
-⚠️ **Ethical Use Only / 仅限合法用途**
-
-This tool is intended **exclusively** for **non-malicious, legitimate executables** (e.g., installers, utilities, enterprise tools, commercial software).  
-Do **not** use it to submit malware, packed/obfuscated binaries, crypter output, or any harmful code.
-
-本工具**仅限**用于**非恶意、合法的可执行文件**（如安装程序、实用工具、企业软件、商业应用）。  
-**严禁**提交恶意软件、加壳/混淆二进制文件、加密器输出或任何有害代码。
-
-Misuse may result in API key revocation or legal consequences.  
-滥用可能导致 API 密钥被吊销或承担法律责任。
-
-🔗 Learn more: [Data Encoder – Compliant AV False Positive Protection](https://data-encoder.com)
+🔗 了解更多：[Data Encoder – 合规的 AV 误报防护方案](https://data-encoder.com)
 
 ## Features / 功能特点
-
-- Submit files to **VirusTotal** (supports free tier, including files >32 MB)  
-  支持向 **VirusTotal** 提交文件（兼容免费配额，支持 >32 MB 大文件）
-- Optional integration with **Hybrid Analysis** and **MetaDefender Cloud**  
-  可选集成 **Hybrid Analysis** 与 **MetaDefender Cloud**
-- Local **YARA rule scanning** for common false-positive triggers (e.g., UPX packer)  
-  本地 **YARA 规则扫描**，检测常见误报诱因（如 UPX 加壳）
-- **CAPA** static behavioral analysis (detects packers, encryption, anti-analysis, etc.)  
-  **CAPA** 静态行为能力分析（检测加壳、加密、防分析等特征）
-- Advanced **False Positive Risk Score** (0–100) with detailed reasons  
-  高级**误报风险评分**（0–100 分），并列出具体原因
-- Generate **detailed JSON reports** and **beautiful, professional HTML reports**  
-  生成详细 **JSON 报告** 与 **美观、专业级 HTML 报告**
-- Batch scanning of directories (recursive `.exe`, `.dll`, `.scr`)  
-  支持批量扫描目录（递归查找 `.exe`、`.dll`、`.scr`）
-- Rich console output with progress bars  
-  丰富的控制台输出，带进度条显示
-
+- Submit files to VirusTotal (free tier supported)  
+  支持向 VirusTotal 提交文件（兼容免费配额）
+- Submit files to MetaDefender Cloud (requires API key)  
+  支持向 MetaDefender Cloud 提交文件（需 API 密钥）
+- Generate JSON reports of detection results  
+  自动生成检测结果的 JSON 报告
+- Display human-readable summaries of flagged engines  
+  以可读格式展示被标记的杀毒引擎列表
+- Helps document false positives for vendor dispute submissions  
+  协助整理误报证据，用于向杀毒厂商申诉
+ 
 ## Requirements / 环境要求
-
 - Python 3.8+
-- Libraries listed in `requirements.txt`
+- `requests` library
+- 免费的 [VirusTotal API 密钥](https://virustotal.com)
+- （可选）[MetaDefender API 密钥](https://metadefender.opswat.com)
+## Usage / 使用方法
+Scan a file:
+ 
+python cli.py scan --file your-clean-app.exe --output report.json
+Example output:
+✅ File: installer.exe
+📊 Size: 3.2 MB
+🔑 SHA256: a1b2c3...f9
+🔍 VirusTotal: 2 / 70 engines flagged
+   - Flagged by:
+     • WindowsDefender: Trojan:Win32/Fuery.B!cl
+     • ClamAV: Win.Trojan.FakeInstaller-123
+🛡️ YARA Matches:
+   • UPX_Packer
+## Ethical & Legal Notice / 合规声明
+This tool is intended only for software developers to validate the reputation of their own legitimate software.
+Do not use it to:
 
-**API Keys Needed / 所需密钥：**
-- Free [VirusTotal API key](https://www.virustotal.com/gui/join-us) (required)  
-  免费 [VirusTotal API 密钥](https://www.virustotal.com/gui/join-us)（必须）
-- Optional: Hybrid Analysis API key (for sandbox verdict)  
-  可选：Hybrid Analysis API 密钥（用于沙箱分析）
-- Optional: MetaDefender Cloud API key  
-  可选：MetaDefender Cloud API 密钥
+Test malware or exploit payloads
+Evaluate the effectiveness of FUD crypters or obfuscators
+Bypass security controls for malicious purposes
+Misuse of VirusTotal or this tool may result in API key revocation or legal action.
 
-## Installation / 安装步骤
+ 
+- 本工具仅限软件开发者验证自身合法程序的信誉状态。
+严禁用于：
+
+测试恶意软件或攻击载荷
+评估“免杀加密器”或混淆工具的有效性
+为恶意目的绕过安全检测
+滥用 VirusTotal 或本工具可能导致 API 密钥被封禁或承担法律责任.
+
+## Setup / 安装步骤
 
 ```bash
 git clone https://github.com/gerdonamendez-Crypter/av-false-positive-tester.git
 cd av-false-positive-tester
 pip install -r requirements.txt
+
+
