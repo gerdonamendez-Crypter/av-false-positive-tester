@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV False Positive Report - {{ report.file_info.file }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .badge { @apply px-3 py-1 rounded-full text-sm font-medium; }
+        .badge-clean { @apply bg-green-100 text-green-800; }
+        .badge-low { @apply bg-blue-100 text-blue-800; }
+        .badge-medium { @apply bg-yellow-100 text-yellow-800; }
+        .badge-high { @apply bg-orange-100 text-orange-800; }
+        .badge-critical { @apply bg-red-100 text-red-800; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+<div class="max-w-5xl mx-auto p-6 bg-white shadow-lg rounded-lg my-8">
+    <header class="border-b pb-6 mb-8">
+        <h1 class="text-3xl font-bold text-indigo-700">AV False Positive Analysis Report</h1>
+        <p class="text-gray-600 mt-2">Generated on {{ timestamp }}</p>
+    </header>
+
+    <!-- File Overview -->
+    <section class="mb-10">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-file-alt mr-3 text-indigo-600"></i> File Information
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-100 p-6 rounded-lg">
+            <div>
+                <p><span class="font-medium">Filename:</span> {{ report.file_info.file }}</p>
+                <p><span class="font-medium">Size:</span> {{ "%.2f" % size_mb }} MB</p>
+                <p><span class="font-medium">SHA256:</span> <code class="text-xs bg-gray-200 px-2 py-1 rounded">{{ report.file_info.sha256 }}</code></p>
+            </div>
+            <div class="text-right">
+                {% if report.fp_risk.score == 0 %}
+                    <span class="badge badge-clean">Very Low Risk</span>
+                {% elif report.fp_risk.score < 30 %}
+                    <span class="badge badge-low">Low Risk</span>
+                {% elif report.fp_risk.score < 50 %}
+                    <span class="badge badge-medium">Medium Risk</span>
+                {% elif report.fp_risk.score < 80 %}
+                    <span class="badge badge-high">High Risk</span>
+                {% else %}
+                    <span class="badge badge-critical">Critical Risk</span>
+                {% endif %}
+                <p class="text-3xl font-bold mt-4 text-gray-800">{{ report.fp_risk.score }}/100</p>
+                <p class="text-sm text-gray-600">False Positive Risk Score</p>
+            </div>
+        </div>
+
+        {% if report.fp_risk.reasons %}
+        <div class="mt-4">
+            <p class="font-medium text-red-700">Reasons for elevated risk:</p>
+            <ul class="list-disc list-inside mt-2 text-sm">
+                {% for reason in report.fp_risk.reasons %}
+                <li class="text-gray-700">{{ reason }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- VirusTotal Results -->
+    {% if report.virustotal and report.virustotal.data.attributes.last_analysis_stats %}
+    <section class="mb-10">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-virus mr-3 text-red-600"></i> VirusTotal Scan Results
+        </h2>
+        {% set stats = report.virustotal.data.attributes.last_analysis_stats %}
+        {% set flagged = stats.malicious + stats.suspicious %}
+        {% set total = stats.malicious + stats.suspicious + stats.harmless + stats.undetected + (stats.timeout|default(0)) + (stats.failure|default(0)) %}
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-red-50 p-4 rounded text-center">
+                <p class="text-2xl font-bold text-red-700">{{ flagged }}</p>
+                <p class="text-sm">Flagged</p>
+            </div>
+            <div class="bg-green-50 p-4 rounded text-center">
+                <p class="text-2xl font-bold text-green-700">{{ stats.harmless }}</p>
+                <p class="text-sm">Clean</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded text-center">
+                <p class="text-2xl font-bold text-gray-700">{{ stats.undetected }}</p>
+                <p class="text-sm">Undetected</p>
+            </div>
+            <div class="bg-blue-50 p-4 rounded text-center">
+                <p class="text-2xl font-bold text-blue-700">{{ total }}</p>
+                <p class="text-sm">Total Engines</p>
+            </div>
+        </div>
+
+        {% if flagged > 0 %}
+        <details class="bg-gray-100 p-4 rounded">
+            <summary class="font-medium cursor-pointer">Show engines that flagged the file ({{ flagged }})</summary>
+            <ul class="mt-3 space-y-2">
+                {% for engine, result in report.virustotal.data.attributes.last_analysis_results.items() %}
+                    {% if result.category in ['malicious', 'suspicious'] %}
+                    <li class="flex justify-between text-sm">
+                        <span class="font-medium">{{ engine }}</span>
+                        <span class="text-red-600">{{ result.result or result.category }}</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </details>
+        {% else %}
+        <p class="text-green-700 font-medium text-lg">✅ Clean on all engines!</p>
+        {% endif %}
+    </section>
+    {% endif %}
+
+    <!-- YARA Matches -->
+    {% if report.yara_matches %}
+    <section class="mb-10">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-search mr-3 text-purple-600"></i> YARA Rule Matches
+        </h2>
+        <div class="bg-orange-50 border border-orange-200 p-4 rounded">
+            <ul class="list-disc list-inside space-y-1">
+                {% for match in report.yara_matches %}
+                <li class="text-orange-800 font-medium">{{ match }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- CAPA Capabilities -->
+    {% if report.capa and report.capa.capabilities %}
+    <section class="mb-10">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-microchip mr-3 text-teal-600"></i> CAPA Detected Capabilities
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for cap in report.capa.capabilities %}
+            <div class="bg-teal-50 p-4 rounded border border-teal-200">
+                <p class="font-medium text-teal-900">{{ cap.name }}</p>
+                {% if cap.namespace %}
+                <p class="text-sm text-teal-700"><strong>Namespace:</strong> {{ cap.namespace }}</p>
+                {% endif %}
+                {% if cap.description %}
+                <p class="text-sm text-gray-700 mt-1">{{ cap.description }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Hybrid Analysis Summary -->
+    {% if report.hybrid_analysis %}
+    <section class="mb-10">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-flask mr-3 text-pink-600"></i> Hybrid Analysis Verdict
+        </h2>
+        <div class="bg-pink-50 p-5 rounded border border-pink-200">
+            <p><strong>Verdict:</strong> <span class="font-bold text-pink-800">{{ report.hybrid_analysis.verdict|default("N/A")|upper }}</span></p>
+            <p><strong>Threat Score:</strong> {{ report.hybrid_analysis.threat_score|default(0) }}/100</p>
+            {% if report.hybrid_analysis.threats %}
+            <p class="mt-3 font-medium">Top threats:</p>
+            <ul class="list-disc list-inside text-sm">
+                {% for threat in report.hybrid_analysis.threats[:10] %}
+                <li>{{ threat }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+    </section>
+    {% endif %}
+
+    <footer class="text-center text-gray-500 text-sm mt-12 pt-6 border-t">
+        <p>AV False Positive Tester • Ethical use only for legitimate software</p>
+        <p>Report generated on {{ timestamp }}</p>
+    </footer>
+</div>
+
+</body>
+</html>
