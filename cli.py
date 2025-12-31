@@ -3,86 +3,101 @@ import os
 import sys
 import json
 import argparse
+from pathlib import Path
+from rich.console import Console
+from rich.table import Table
 from .core import get_file_info
 from .virustotal import scan_file_with_virustotal
+from .yara_scan import scan_with_yara
+# from .metadefender import scan_metadefender  # Uncomment if key provided
 
-def scan_command(args):
-    if not os.path.isfile(args.file):
-        print(f"[!] File not found: {args.file}")
-        sys.exit(1)
- 
-    if not os.path.exists('config.json'):
-        print("[!] Missing config.json. Create it from config.example.json")
-        sys.exit(1)
+console = Console()
 
-    with open('config.json') as f:
-        config = json.load(f)
+def process_file(filepath, config):
+    info = get_file_info(filepath)
+    console.print(f"[bold]Scanning:[/] {info['file']} ({info['size_bytes']/1024/1024:.1f} MB)")
 
-    api_key = config.get('virustotal_api_key')
-    if not api_key:
-        print("[!] Missing 'virustotal_api_key' in config.json")
-        sys.exit(1)
+    yara_matches = scan_with_yara(filepath)
 
-    try:
-        file_info = get_file_info(args.file)
-        print(f"[INFO] Analyzing: {file_info['file']} ({file_info['size_bytes']} bytes)")
+    vt_data = None
+    if config.get('virustotal_api_key'):
+        vt_data = scan_file_with_virustotal(filepath, config['virustotal_api_key'])
 
-        # Optional YARA scan
-        yara_matches = None
-        try:
-            from .yara_scan import scan_with_yara
-            yara_matches = scan_with_yara(args.file)
-            if yara_matches is not None:
-                status = ', '.join(yara_matches) if yara_matches else 'None'
-                print(f"[🔍] YARA matches: {status}")
-        except Exception as e:
-            print(f"[!] YARA scan failed: {e}")
+    md_data = None
+    # if config.get('metadefender_api_key'):
+    #     md_data = scan_metadefender(filepath, config['metadefender_api_key'])
 
-        # VirusTotal scan
-        vt_data = scan_file_with_virustotal(args.file, api_key, wait_time=args.wait)
+    report = {
+        "file_info": info,
+        "yara_matches": yara_matches,
+        "virustotal": vt_data,
+        "metadefender": md_data
+    }
+    return report
 
-        # Build final report
-        report = {
-            "file": file_info["file"],
-            "size_bytes": file_info["size_bytes"],
-            "sha256": file_info["sha256"],
-            "virustotal": vt_data,
-            "metadefender": None,
-            "yara": {
-                "matches": yara_matches,
-                "rules_used": "suspicious_files.yar"
-            } if yara_matches is not None else None
-        }
+def view_report(report_path):
+    with open(report_path) as f:
+        data = json.load(f)
 
-        with open(args.output, 'w') as f:
-            json.dump(report, f, indent=2)
-        print(f"[✅] Report saved to: {args.output}")
+    info = data["file_info"]
+    console.print(f"[green]File:[/] {info['file']} | SHA256: {info['sha256'][:16]}...")
 
-    except Exception as e:
-        print(f"[❌] Error: {e}")
-        sys.exit(1)
+    if data["yara_matches"]:
+        console.print("[yellow]YARA Matches:[/]", ", ".join(data["yara_matches"]))
+
+    vt = data.get("virustotal", {}).get("data", {}).get("attributes", {})
+    if vt:
+        stats = vt["last_analysis_stats"]
+        flagged = stats["malicious"] + stats["suspicious"]
+        total = stats["harmless"] + stats["undetected"] + flagged + stats.get("timeout", 0)
+        console.print(f"[bold blue]VirusTotal:[/] {flagged}/{total} flagged")
+
+        if flagged:
+            table = Table(title="Flagged Engines")
+            table.add_column("Engine")
+            table.add_column("Detection")
+            for engine, res in vt["last_analysis_results"].items():
+                if res["category"] in ("malicious", "suspicious"):
+                    table.add_row(engine, res.get("result", "N/A"))
+            console.print(table)
 
 def main():
-    parser = argparse.ArgumentParser(description="File Reputation & YARA Analyzer")
-    subparsers = parser.add_subparsers(dest='command', help="Commands")
+    parser = argparse.ArgumentParser(description="Advanced AV False Positive Tester")
+    subparsers = parser.add_subparsers(dest='command')
 
-    scan_parser = subparsers.add_parser('scan', help='Scan file with VirusTotal + YARA')
-    scan_parser.add_argument('--file', required=True, help='File to analyze')
-    scan_parser.add_argument('--output', default='report.json', help='Report output path')
-    scan_parser.add_argument('--wait', type=int, default=15, help='Wait time after upload (default: 15s)')
+    scan_p = subparsers.add_parser('scan')
+    scan_p.add_argument('paths', nargs='+', help='Files or directories to scan')
+    scan_p.add_argument('--output-dir', default='reports', help='Output directory')
 
-    view_parser = subparsers.add_parser('view', help='View saved report')
-    view_parser.add_argument('--input', required=True, help='Report JSON file')
+    view_p = subparsers.add_parser('view')
+    view_p.add_argument('report', help='JSON report file')
 
     args = parser.parse_args()
 
     if args.command == 'scan':
-        scan_command(args)
+        os.makedirs(args.output_dir, exist_ok=True)
+        with open('config.json') as f:
+            config = json.load(f)
+
+        files = []
+        for p in args.paths:
+            path = Path(p)
+            if path.is_file():
+                files.append(path)
+            elif path.is_dir():
+                files.extend(path.rglob('*.exe'))
+
+        for file_path in files:
+            try:
+                report = process_file(str(file_path), config)
+                out_path = Path(args.output_dir) / f"{report['file_info']['sha256']}.json"
+                json.dump(report, out_path.open('w'), indent=2)
+                console.print(f"[green]Saved:[/] {out_path}")
+            except Exception as e:
+                console.print(f"[red]Error on {file_path}: {e}[/]")
+
     elif args.command == 'view':
-        from .view import view_report
-        view_report(args.input)
-    else:
-        parser.print_help()
+        view_report(args.report)
 
 if __name__ == '__main__':
     main()
