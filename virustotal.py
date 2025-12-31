@@ -1,4 +1,4 @@
-# virustotal.py
+# virustotal.py (add large file support)
 import time
 import requests
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -15,7 +15,9 @@ def _vt_request(method, url, api_key, **kwargs):
 
 def scan_file_with_virustotal(filepath, api_key):
     file_hash = sha256_file(filepath)
+    file_size = os.path.getsize(filepath)
 
+    # Check if already analysed
     try:
         return _vt_request("GET", f"{VT_API_BASE}/files/{file_hash}", api_key)
     except requests.exceptions.HTTPError as e:
@@ -23,14 +25,19 @@ def scan_file_with_virustotal(filepath, api_key):
             raise
 
     # Upload
-    with open(filepath, 'rb') as f:
-        upload_resp = _vt_request("POST", f"{VT_API_BASE}/files", api_key, files={"file": f})
-    analysis_id = upload_resp["data"]["id"]
+    if file_size > 32 * 1024 * 1024:  # >32MB
+        upload_url = _vt_request("GET", f"{VT_API_BASE}/files/upload_url", api_key)["data"]
+    else:
+        upload_url = f"{VT_API_BASE}/files"
 
-    # Poll until complete
+    with open(filepath, 'rb') as f:
+        resp = _vt_request("POST", upload_url, api_key, files={"file": f})
+
+    analysis_id = resp["data"]["id"]
+
+    # Poll
     while True:
         analysis = _vt_request("GET", f"{VT_API_BASE}/analyses/{analysis_id}", api_key)
-        status = analysis["data"]["attributes"]["status"]
-        if status == "completed":
+        if analysis["data"]["attributes"]["status"] == "completed":
             return _vt_request("GET", f"{VT_API_BASE}/files/{file_hash}", api_key)
         time.sleep(15)
