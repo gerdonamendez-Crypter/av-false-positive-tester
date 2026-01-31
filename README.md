@@ -40,6 +40,7 @@ Misuse may result in API key revocation or legal consequences.
   支持批量扫描目录（递归查找 `.exe`、`.dll`、`.scr`）
 - Rich console output with progress bars  
   丰富的控制台输出，带进度条显示
+- Easy working
 
   ## Sample HTML Report / HTML 报告示例
   The generated HTML reports feature:
