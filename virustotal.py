@@ -1,43 +1,89 @@
-# virustotal.py (add large file support)
+# virustotal.py  (suggested replacement / enhancement)
+
+import os
 import time
 import requests
-from tenacity import retry, stop_after_attempt, wait_exponential
-from .core import sha256_file
+import hashlib
+from typing import Dict, Optional
 
-VT_API_BASE = "https://www.virustotal.com/api/v3"
+class VirusTotalScanner:
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+        self.headers = {"x-apikey": api_key}
+        self.base_url = "https://www.virustotal.com/api/v3"
 
-@retry(stop=stop_after_attempt(5), wait=wait_exponential())
-def _vt_request(method, url, api_key, **kwargs):
-    headers = {"x-apikey": api_key}
-    resp = requests.request(method, url, headers=headers, **kwargs)
-    resp.raise_for_status()
-    return resp.json()
+    def get_file_hash(self, filepath: str) -> str:
+        """Compute SHA256 hash"""
+        sha256 = hashlib.sha256()
+        with open(filepath, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                sha256.update(chunk)
+        return sha256.hexdigest()
 
-def scan_file_with_virustotal(filepath, api_key):
-    file_hash = sha256_file(filepath)
-    file_size = os.path.getsize(filepath)
+    def get_report_by_hash(self, file_hash: str) -> Optional[Dict]:
+        """Check if report already exists"""
+        url = f"{self.base_url}/files/{file_hash}"
+        try:
+            resp = requests.get(url, headers=self.headers, timeout=15)
+            if resp.status_code == 200:
+                print("[VT] Report found in cache.")
+                return resp.json()
+            elif resp.status_code == 404:
+                return None
+            else:
+                print(f"[VT] API error: {resp.status_code} - {resp.text[:200]}")
+                return None
+        except Exception as e:
+            print(f"[VT] Request failed: {e}")
+            return None
 
-    # Check if already analysed
-    try:
-        return _vt_request("GET", f"{VT_API_BASE}/files/{file_hash}", api_key)
-    except requests.exceptions.HTTPError as e:
-        if e.response.status_code != 404:
-            raise
+    def upload_and_analyze(self, filepath: str, max_polling_time: int = 300) -> Dict:
+        """Upload file (supports large files) and poll for result"""
+        print(f"[VT] Uploading {os.path.basename(filepath)} ...")
+        url = f"{self.base_url}/files"
+        with open(filepath, "rb") as f:
+            files = {"file": (os.path.basename(filepath), f)}
+            resp = requests.post(url, headers=self.headers, files=files, timeout=60)
 
-    # Upload
-    if file_size > 32 * 1024 * 1024:  # >32MB
-        upload_url = _vt_request("GET", f"{VT_API_BASE}/files/upload_url", api_key)["data"]
-    else:
-        upload_url = f"{VT_API_BASE}/files"
+        if resp.status_code not in (200, 201):
+            raise RuntimeError(f"Upload failed: {resp.status_code} - {resp.text[:300]}")
 
-    with open(filepath, 'rb') as f:
-        resp = _vt_request("POST", upload_url, api_key, files={"file": f})
+        analysis_id = resp.json()["data"]["id"]
+        print(f"[VT] Upload successful. Analysis ID: {analysis_id}")
 
-    analysis_id = resp["data"]["id"]
+        # Better polling with exponential backoff
+        start = time.time()
+        while time.time() - start < max_polling_time:
+            result_url = f"{self.base_url}/analyses/{analysis_id}"
+            resp = requests.get(result_url, headers=self.headers, timeout=15)
 
-    # Poll
-    while True:
-        analysis = _vt_request("GET", f"{VT_API_BASE}/analyses/{analysis_id}", api_key)
-        if analysis["data"]["attributes"]["status"] == "completed":
-            return _vt_request("GET", f"{VT_API_BASE}/files/{file_hash}", api_key)
-        time.sleep(15)
+            if resp.status_code == 200:
+                data = resp.json()
+                status = data["data"]["attributes"]["status"]
+                if status == "completed":
+                    print("[VT] Analysis completed.")
+                    return data
+                elif status in ("queued", "in_progress"):
+                    print(f"[VT] Status: {status} ... waiting")
+                else:
+                    print(f"[VT] Unexpected status: {status}")
+            else:
+                print(f"[VT] Poll error: {resp.status_code}")
+
+            time.sleep(15)  # VT free tier usually needs ~15–60s
+
+        raise TimeoutError("Analysis did not complete in time.")
+
+    def scan(self, filepath: str) -> Dict:
+        """Main entry point: check → upload if needed → return full report"""
+        file_hash = self.get_file_hash(filepath)
+        report = self.get_report_by_hash(file_hash)
+
+        if report is None:
+            report = self.upload_and_analyze(filepath)
+
+        return {
+            "sha256": file_hash,
+            "size_bytes": os.path.getsize(filepath),
+            "virustotal": report,
+        }
