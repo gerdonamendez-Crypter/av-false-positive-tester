@@ -19,7 +19,7 @@ Do **not** use it to submit malware, packed/obfuscated binaries, crypter output,
 
 Misuse may result in API key revocation or legal consequences.  
 滥用可能导致 API 密钥被吊销或承担法律责任。
-
+ 
 🔗 Learn more: [Data Encoder – Compliant AV False Positive Protection](https://data-encoder.com)
 
 ## Features / 功能特点
