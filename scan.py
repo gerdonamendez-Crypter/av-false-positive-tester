@@ -20,7 +20,7 @@ def scan_virustotal(file_path, api_key):
     url = f"https://www.virustotal.com/api/v3/files/{file_hash}"
     headers = {"x-apikey": api_key}
     resp = requests.get(url, headers=headers)
-
+ 
     if resp.status_code == 200:
         print("[VT] File found in database. Fetching report.")
         return resp.json()
