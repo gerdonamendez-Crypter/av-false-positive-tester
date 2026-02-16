@@ -6,7 +6,7 @@ from typing import Dict, Any, List, Optional
 import pefile
 from pefile import PE
 
-
+ 
 def sha256_file(filepath: str) -> str:
     """Compute SHA-256 hash efficiently."""
     h = hashlib.sha256()
