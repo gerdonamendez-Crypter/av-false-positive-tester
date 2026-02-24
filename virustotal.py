@@ -47,7 +47,7 @@ class VirusTotalScanner:
 
         if resp.status_code not in (200, 201):
             raise RuntimeError(f"Upload failed: {resp.status_code} - {resp.text[:300]}")
-
+ 
         analysis_id = resp.json()["data"]["id"]
         print(f"[VT] Upload successful. Analysis ID: {analysis_id}")
 
