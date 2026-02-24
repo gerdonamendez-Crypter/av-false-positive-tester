@@ -16,7 +16,7 @@ from .yara_scan import scan_with_yara
 from .hybrid_analysis import scan_hybrid_analysis
 
 console = Console()
-
+ 
 # Optional imports
 try:
     from .capa_scan import scan_with_capa
