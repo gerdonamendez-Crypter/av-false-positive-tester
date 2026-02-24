@@ -12,7 +12,7 @@ def view_report(report_path):
     print(f"✅ File: {data['file']}")
     print(f"📊 Size: {data['size_bytes'] / (1024*1024):.1f} MB")
     print(f"🔑 SHA256: {data['sha256']}")
-
+ 
     vt = data.get('virustotal', {}).get('data', {}).get('attributes', {})
     if 'last_analysis_stats' in vt:
         stats = vt['last_analysis_stats']
