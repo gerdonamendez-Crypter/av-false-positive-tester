@@ -3,7 +3,7 @@ import requests
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 HA_BASE = "https://www.hybrid-analysis.com/api/v2"
-
+ 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential())
 def scan_hybrid_analysis(filepath, api_key):
     headers = {"api-key": api_key, "user-agent": "Falcon Sandbox"}
