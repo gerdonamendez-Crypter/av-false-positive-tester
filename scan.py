@@ -16,7 +16,7 @@ def sha256_file(filepath):
 def scan_virustotal(file_path, api_key):
     print(f"[VT] Checking if file already exists...")
     file_hash = sha256_file(file_path)
-
+ 
     url = f"https://www.virustotal.com/api/v3/files/{file_hash}"
     headers = {"x-apikey": api_key}
     resp = requests.get(url, headers=headers)
