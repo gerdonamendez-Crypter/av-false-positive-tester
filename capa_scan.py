@@ -9,7 +9,7 @@ def scan_with_capa(filepath: str) -> Dict[str, Any]:
             ["capa", "-j", filepath],
             capture_output=True,
             text=True,
-            check=True
+            check=True 
         )
         data = json.loads(result.stdout)
         capabilities = []
