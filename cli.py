@@ -14,7 +14,7 @@ from .core import get_file_info
 from .virustotal import scan_file_with_virustotal
 from .yara_scan import scan_with_yara
 from .hybrid_analysis import scan_hybrid_analysis
-
+ 
 console = Console()
  
 # Optional imports
