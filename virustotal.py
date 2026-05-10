@@ -11,7 +11,7 @@ class VirusTotalScanner:
         self.api_key = api_key
         self.headers = {"x-apikey": api_key}
         self.base_url = "https://www.virustotal.com/api/v3"
-
+ 
     def get_file_hash(self, filepath: str) -> str:
         """Compute SHA256 hash"""
         sha256 = hashlib.sha256()
