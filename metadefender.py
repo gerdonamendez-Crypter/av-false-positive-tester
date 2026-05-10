@@ -3,7 +3,7 @@ import requests
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 BASE_URL = "https://api.metadefender.com/v4"
-
+ 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=1, min=4, max=30))
 def scan_metadefender(filepath, api_key):
     headers = {"apikey": api_key}
